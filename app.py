@@ -1,5 +1,5 @@
 """
-Academic Paper Finder - Refactored with Component Architecture
+Paper Finder - Refactored with Component Architecture
 Clean, maintainable code with reusable components
 """
 
@@ -59,22 +59,67 @@ def GlobalStyles():
     """Global CSS styles for animations and effects"""
     solara.HTML(unsafe_innerHTML="""
     <style>
+        /* Remove underline from input fields */
+        .v-text-field__slot input {
+            border-bottom: none !important;
+        }
+        .v-text-field > .v-input__control > .v-input__slot:before,
+        .v-text-field > .v-input__control > .v-input__slot:after {
+            border-bottom: none !important;
+        }
+        .v-input__slot:before,
+        .v-input__slot:after {
+            display: none !important;
+        }
+        
         .paper-card {
             position: relative;
             overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .paper-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-            border-color: #93c5fd !important;
+            box-shadow: 0 20px 50px rgba(59, 130, 246, 0.25), 0 8px 10px rgba(0, 0, 0, 0.15) !important;
+            border-color: #3b82f6 !important;
+            border-left-width: 6px !important;
+        }
+        .action-btn {
+            background-color: #dbeafe !important;
+            color: #3b82f6 !important;
+            transition: all 0.3s ease !important;
+        }
+        .action-btn:hover {
+            background-color: #3b82f6 !important;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+        }
+        .action-btn.secondary {
+            background-color: #e0e7ff !important;
+            color: #4338ca !important;
+        }
+        .action-btn.secondary:hover {
+            background-color: #6366f1 !important;
+            color: #ffffff !important;
+        }
+        .search-btn {
+            background-color: #73acec !important;
+            color: #1e3a8a !important;
+            transition: all 0.3s ease !important;
         }
         .search-btn:hover {
-            transform: translateY(-2px);
+            background-color: #3b82f6 !important;
+            color: #ffffff !important;
+            transform: translateY(-4px);
             box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3) !important;
+        }
+        .load-more-btn {
+            transition: all 0.3s ease !important;
         }
         .load-more-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2) !important;
+            background-color: #3b82f6 !important;
+            color: #ffffff !important;
         }
         @keyframes shimmer {
             0% { background-position: 200% 0; }
@@ -99,20 +144,20 @@ def GlobalStyles():
 def Header():
     """Application header with title and subtitle"""
     with solara.Column(style={
-        "text-align": "center",
+        "text-align": "center", 
         "margin-bottom": "50px",
-        "padding": "30px 20px",
+        "padding": "50px 40px",
         "background": "rgba(255, 255, 255, 0.8)",
-        "border-radius": "20px",
+        "border-radius": "24px",
         "backdrop-filter": "blur(10px)",
         "box-shadow": "0 8px 32px rgba(0, 0, 0, 0.08)"
     }):
         solara.HTML(
             tag="h1",
-            unsafe_innerHTML="📚 Academic Paper Finder",
+            unsafe_innerHTML="📚 Paper Finder",
             style={
-                "font-size": "3.5rem",
-                "margin-bottom": "15px",
+                "font-size": "4rem",
+                "margin-bottom": "20px",
                 "color": "#1e293b",
                 "font-weight": "800",
                 "letter-spacing": "-0.02em"
@@ -120,12 +165,15 @@ def Header():
         )
         solara.HTML(
             tag="p",
-            unsafe_innerHTML="<em>Discover, explore, and organize academic papers with transparent ranking</em>",
+            unsafe_innerHTML="<em>Discover, explore, and organize academic papers with transparent ranking and real-time citations</em>",
             style={
-                "font-size": "1.3rem",
+                "font-size": "1.4rem",
                 "color": "#475569",
                 "margin": "0",
-                "font-weight": "400"
+                "font-weight": "400",
+                "max-width": "900px",
+                "margin-left": "auto",
+                "margin-right": "auto"
             }
         )
 
@@ -166,7 +214,17 @@ def SearchSection():
                 label="Enter keywords, topic, or author",
                 value=search_query.value,
                 on_value=lambda value: (search_query.set(value), perform_search() if value.strip() else None),
-                style={"width": "100%"},
+                style={
+                    "width": "100%",
+                    "border": "2px solid #e2e8f0",
+                    "border-radius": "12px",
+                    "padding": "14px 18px",
+                    "font-size": "1.05rem",
+                    "box-shadow": "0 2px 8px rgba(0, 0, 0, 0.05)",
+                    "transition": "all 0.3s ease",
+                    "outline": "none",
+                    "text-decoration": "none"
+                },
                 continuous_update=False
             )
             solara.HTML(
@@ -258,9 +316,8 @@ def ErrorState():
 @solara.component
 def CitationBadge(count: int):
     """Citation count badge component"""
-    with solara.v.Html(tag="div", style_="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 6px 14px; border-radius: 16px; border: 1px solid #6ee7b7;"):
-        solara.Markdown(f"📊 **{count:,}** citations",
-                       style={"margin": "0", "font-size": "0.9rem", "color": "#065f46", "font-weight": "700"})
+    solara.Markdown(f"📊 **{count:,}** citations",
+                   style={"margin": "0", "font-size": "0.9rem", "color": "#059669", "font-weight": "700"})
 
 
 @solara.component
@@ -279,15 +336,57 @@ def PaperCard(paper: Paper, index: int):
         "cursor": "default"
     }, classes=["paper-card"]):
         
-        # Title and Relevance Score
-        with solara.Row(style={"justify-content": "space-between", "align-items": "start", "gap": "15px"}):
+        # Title, Action Buttons, and Relevance Score (all in one row)
+        with solara.Row(style={"justify-content": "space-between", "align-items": "center", "gap": "15px"}):
             solara.Markdown(f"**{index}. {paper.title}**",
                            style={"flex": "1", "margin": "0", "font-size": "1.1rem", "color": "#0f172a", "font-weight": "700"})
-            with solara.v.Html(tag="div", style_="background: #dbeafe; padding: 6px 12px; border-radius: 20px;"):
-                solara.Markdown(f"**{paper.relevance_score:.2f}**",
-                               style={"color": "#1e40af", "font-size": "0.85rem", "margin": "0", "font-weight": "700"})
+            
+            # Action Buttons
+            with solara.Row(style={"gap": "8px", "align-items": "center"}):
+                solara.Button(
+                    "🔗 View",
+                    href=paper.url,
+                    target="_blank",
+                    color="primary",
+                    text=False,
+                    style={
+                        "padding": "6px 12px",
+                        "font-size": "0.85rem",
+                        "font-weight": "600",
+                        "border-radius": "6px",
+                        "transition": "all 0.3s ease",
+                        "text-transform": "none",
+                        "min-width": "70px",
+                        "border": "1px solid #93c5fd"
+                    },
+                    classes=["action-btn", "secondary"]
+                )
+                if paper.pdf_url:
+                    solara.Button(
+                        "📥 PDF",
+                        href=paper.pdf_url,
+                        target="_blank",
+                        color="secondary",
+                        text=False,
+                        style={
+                            "padding": "6px 12px",
+                            "font-size": "0.85rem",
+                            "font-weight": "600",
+                            "border-radius": "6px",
+                            "transition": "all 0.3s ease",
+                            "text-transform": "none",
+                            "min-width": "70px",
+                            "border": "1px solid #6366f1"
+                        },
+                        classes=["action-btn", "secondary"]
+                    )
+                
+                # Relevance Score
+                with solara.v.Html(tag="div", style_="background: #dbeafe; padding: 6px 12px; border-radius: 20px;"):
+                    solara.Markdown(f"**{paper.relevance_score:.2f}**",
+                                   style={"color": "#1e40af", "font-size": "0.85rem", "margin": "0", "font-weight": "700"})
         
-        # Metadata: Authors, Date, Citations
+        # Metadata: Authors, Date, Citations, Affiliations
         with solara.Row(style={"gap": "24px", "flex-wrap": "wrap", "align-items": "center", "margin-bottom": "4px"}):
             # Authors
             author_text = ', '.join(paper.authors[:3])
@@ -302,50 +401,16 @@ def PaperCard(paper: Paper, index: int):
             
             # Citations
             CitationBadge(paper.citation_count)
-        
-        # Affiliations (if available)
-        if paper.affiliations:
-            solara.Markdown(f"🏛️ {', '.join(paper.affiliations)}",
-                           style={"margin": "0", "font-size": "0.92rem", "color": "#6366f1", "font-style": "italic", "line-height": "1.5"})
+            
+            # Affiliations (if available)
+            if paper.affiliations:
+                solara.Markdown(f"🏛️ {', '.join(paper.affiliations)}",
+                               style={"margin": "0", "font-size": "0.92rem", "color": "#6366f1", "font-weight": "600", "line-height": "1.5"})
         
         # Abstract
         abstract = paper.abstract[:280] + "..." if len(paper.abstract) > 280 else paper.abstract
         solara.Markdown(abstract,
                        style={"margin": "8px 0 0 0", "font-size": "1.02rem", "line-height": "1.75", "color": "#334155", "letter-spacing": "0.01em"})
-        
-        # Action Buttons
-        with solara.Row(style={"gap": "12px", "margin-top": "12px"}):
-            solara.Button(
-                "🔗 View Paper",
-                href=paper.url,
-                target="_blank",
-                color="primary",
-                text=True,
-                style={
-                    "padding": "8px 16px",
-                    "font-size": "0.95rem",
-                    "font-weight": "600",
-                    "border-radius": "8px",
-                    "transition": "all 0.2s ease",
-                    "text-transform": "none"
-                }
-            )
-            if paper.pdf_url:
-                solara.Button(
-                    "📥 Download PDF",
-                    href=paper.pdf_url,
-                    target="_blank",
-                    color="secondary",
-                    text=True,
-                    style={
-                        "padding": "8px 16px",
-                        "font-size": "0.95rem",
-                        "font-weight": "600",
-                        "border-radius": "8px",
-                        "transition": "all 0.2s ease",
-                        "text-transform": "none"
-                    }
-                )
 
 
 @solara.component
@@ -413,20 +478,19 @@ def RankingCriteriaCard():
 
 @solara.component
 def FeaturesSection():
-    """Feature cards display"""
-    if search_results.value:
-        with solara.Row(style={"gap": "30px", "margin-bottom": "20px", "margin-top": "40px"}):
-            features = [
-                ("🎯", "Smart Search", "Advanced algorithms to find the most relevant papers for your research"),
-                ("📊", "Transparent Ranking", "Clear documentation of search criteria and ranking methodology"),
-                ("📄", "Direct Access", "Quick links to papers and PDFs from multiple research databases")
-            ]
-            
-            for icon, title, description in features:
-                with solara.Card(style={"flex": "1", "padding": "30px", "text-align": "center"}):
-                    solara.Markdown(icon, style={"font-size": "3rem", "margin-bottom": "15px"})
-                    solara.Markdown(f"**{title}**")
-                    solara.Markdown(description, style={"color": "#64748b", "font-size": "0.9rem"})
+    """Feature cards display - shown on landing page and after results"""
+    with solara.Row(style={"gap": "30px", "margin-bottom": "20px", "margin-top": "40px"}):
+        features = [
+            ("🎯", "Smart Search", "Advanced algorithms to find the most relevant papers for your research"),
+            ("📊", "Transparent Ranking", "Clear documentation of search criteria and ranking methodology"),
+            ("📄", "Direct Access", "Quick links to papers and PDFs from multiple research databases")
+        ]
+        
+        for icon, title, description in features:
+            with solara.Card(style={"flex": "1", "padding": "30px", "text-align": "center"}):
+                solara.Markdown(icon, style={"font-size": "3rem", "margin-bottom": "15px"})
+                solara.Markdown(f"**{title}**")
+                solara.Markdown(description, style={"color": "#64748b", "font-size": "0.9rem"})
 
 
 @solara.component
@@ -439,7 +503,7 @@ def Footer():
         "border-top": "1px solid #e2e8f0"
     }):
         solara.Markdown(
-            "Built with [Solara](https://solara.dev) | [GitHub](https://github.com/rajan-sap/solara-paper-finder)",
+            "Built with [Solara](https://solara.dev) | [GitHub](https://github.com/rajan-sap/paper-finder)",
             style={"color": "#94a3b8"}
         )
 
@@ -457,24 +521,31 @@ def Page():
         "width": "100%",
         "min-height": "100vh",
         "background": "linear-gradient(to bottom, #f8fafc 0%, #e0e7ff 100%)",
-        "padding": "40px 0",
-        "box-sizing": "border-box"
+        "padding": "60px 0 60px 0",
+        "box-sizing": "border-box",
+
     }):
         with solara.Column(style={
-            "width": "70%",
-            "margin": "0 auto",
-            "max-width": "1200px"
+            "width": "95%",
+            "margin": "100 auto 0 10",
+            "max-width": "1800px",
+            "padding": "0 20px"
         }):
             Header()
             SearchSection()
+            
+            # Show features on landing page (before any search)
+            if not search_results.value and not is_searching.value and not search_error.value:
+                FeaturesSection()
             
             if is_searching.value:
                 LoadingState()
             elif search_error.value:
                 ErrorState()
-            else:
+            elif search_results.value:
                 ResultsSection()
                 RankingCriteriaCard()
+                # Show features after results (above footer)
                 FeaturesSection()
             
             Footer()

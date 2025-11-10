@@ -15,7 +15,7 @@ A web application for finding and exploring academic papers, built with Solara -
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd solara-paper-finder
+   cd paper-finder
    ```
 
 2. **Install dependencies with uv**
