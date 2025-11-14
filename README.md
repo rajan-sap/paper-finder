@@ -1,6 +1,6 @@
 # Paper Finder
 
-A web application for finding and exploring academic papers, built with Solara - a react like framework on top to python to build interactive web projects.
+A web application for finding and exploring academic papers, built with Solara - a react-like component framework on top of Python.
 
 ## Features
 
